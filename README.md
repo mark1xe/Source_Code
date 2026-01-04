@@ -38,28 +38,17 @@ The web app allows selecting watering modes and adjusting parameters in real tim
 
 ### ESP32 Pins
 
-    Relay IN     -> GPIO27
-    Button       -> GPIO32 (INPUT_PULLUP, button to GND)
-    Pump LED     -> GPIO16
-
-    HC-SR04:
-      VCC  -> 5V
-      GND  -> GND
-      TRIG -> GPIO5
-      ECHO -> GPIO18
-
-    Warn LED     -> GPIO17
-
-    Soil sensor (Capacitive v1.2):
-      VCC  -> 5V
-      GND  -> GND
-      AO   -> GPIO34 (ADC1)
-
-    OLED SH1106 I2C:
-      SDA -> GPIO21
-      SCL -> GPIO22
-      VCC -> 5V
-      GND -> GND
+| Module | Signal | ESP32 GPIO |
+|------|--------|------------|
+| Relay (Pump) | IN | GPIO27 |
+| Pump LED | LED | GPIO16 |
+| Button | INPUT_PULLUP | GPIO32 |
+| HC-SR04 | TRIG | GPIO5 |
+| HC-SR04 | ECHO | GPIO18 |
+| Low water warn LED | LED | GPIO17 |
+| Soil sensor v1.2 | AO | GPIO34 |
+| OLED SH1106 I2C | SDA | GPIO21 |
+| OLED SH1106 I2C | SCL | GPIO22 |
 
 ### Power notes (important)
 
