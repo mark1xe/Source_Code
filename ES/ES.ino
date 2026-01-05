@@ -42,8 +42,6 @@
 
 #define FIREBASE_HOST "https://project2-cd9c9-default-rtdb.firebaseio.com/"
 #define FIREBASE_AUTH "tsnWspwpI5U5nuM1H5FfVbFvBfJgS3ASCravKsg53y9"  
-#undef FIREBASE_AUTH
-#define FIREBASE_AUTH "tsnWspwpI5U5nuM1H5FfVbFJgS3ASCravKsg53y9"
 
 FirebaseData firebaseData;
 FirebaseAuth auth;
