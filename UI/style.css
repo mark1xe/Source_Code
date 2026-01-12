@@ -1,3 +1,4 @@
+/* style.css */
 :root{
   --bg:#0b1020;
   --text:#e8ecff;
@@ -18,8 +19,8 @@ body{
 }
 
 .wrap{
-  max-width: 720px;
-  margin: 0 auto;
+  max-width:720px;
+  margin:0 auto;
   display:flex;
   flex-direction:column;
   gap:14px;
@@ -32,7 +33,7 @@ body{
   gap:12px;
 }
 
-@media (max-width: 520px){
+@media (max-width:520px){
   .topStats{ grid-template-columns: 1fr; }
 }
 
@@ -83,7 +84,7 @@ body{
 }
 
 .modeItem{
-  position: relative;
+  position:relative;
   display:flex;
   gap:10px;
   align-items:flex-start;
@@ -100,7 +101,7 @@ body{
 
 .modeMain{
   flex:1;
-  min-width: 0;
+  min-width:0;
 }
 
 .modeTop{
@@ -122,21 +123,21 @@ body{
 }
 
 .modeManual{
-  padding-right: 88px; /* chừa chỗ cho switch */
+  padding-right:88px; /* space for switch */
 }
 
-/* Schedule: spaced (no overlap) */
+/* Schedule: spaced */
 .scheduleRow{
-  margin-top: 12px;
-  display: grid;
+  margin-top:12px;
+  display:grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap:18px;
 }
 
-@media (max-width: 520px){
+@media (max-width:520px){
   .scheduleRow{
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns:1fr;
+    gap:12px;
   }
 }
 
@@ -145,7 +146,7 @@ body{
   display:flex;
   flex-direction:column;
   gap:6px;
-  min-width: 0;
+  min-width:0;
 }
 
 .field label{
@@ -154,8 +155,8 @@ body{
 }
 
 .field input{
-  width: 100%;
-  min-width: 0;
+  width:100%;
+  min-width:0;
   background:rgba(255,255,255,.04);
   border:1px solid var(--line);
   color:var(--text);
@@ -186,10 +187,10 @@ body{
 .chip{
   border:1px solid var(--line);
   background: rgba(255,255,255,.05);
-  border-radius: 999px;
+  border-radius:999px;
   padding:7px 10px;
   font-size:12px;
-  color: var(--muted);
+  color:var(--muted);
   white-space:nowrap;
 }
 
@@ -200,8 +201,8 @@ body{
   gap:12px;
 }
 
-@media (max-width: 680px){
-  .footerRow{ grid-template-columns: 1fr; }
+@media (max-width:680px){
+  .footerRow{ grid-template-columns:1fr; }
 }
 
 .miniCard{
@@ -227,70 +228,68 @@ body{
   color:var(--muted);
 }
 
-/* =========================
-   Switch styles (theme)
-   ========================= */
-.switch {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
+/* ===== Switch (theme) ===== */
+.switch{
+  position:absolute;
+  top:10px;
+  right:10px;
+  display:inline-block;
+  width:60px;
+  height:34px;
 }
 
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
 }
 
-.slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  border-radius: 34px;
+.slider{
+  position:absolute;
+  cursor:pointer;
+  inset:0;
+  border-radius:34px;
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.18);
-  transition: .25s;
+  transition:.25s;
 }
 
-.slider::before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  border-radius: 50%;
+.slider::before{
+  position:absolute;
+  content:"";
+  height:26px;
+  width:26px;
+  left:4px;
+  bottom:4px;
+  border-radius:50%;
   background: rgba(255,255,255,.92);
-  transition: .25s;
+  transition:.25s;
 }
 
 .slider::after{
-  position: absolute;
-  content: "off";
-  right: 8px;
-  bottom: 8px;
-  font-weight: 900;
-  font-size: 12px;
+  position:absolute;
+  content:"off";
+  right:8px;
+  bottom:8px;
+  font-weight:900;
+  font-size:12px;
   color: rgba(232,236,255,.70);
-  transition: .25s;
+  transition:.25s;
 }
 
-.switch input:checked + .slider {
+.switch input:checked + .slider{
   background: rgba(106,169,255,.22);
   border-color: rgba(106,169,255,.55);
   box-shadow: 0 0 0 3px rgba(106,169,255,.12);
 }
 
-.switch input:checked + .slider::after {
-  content: "on";
-  right: 36px;
+.switch input:checked + .slider::after{
+  content:"on";
+  right:36px;
   color: rgba(232,236,255,.95);
 }
 
-.switch input:checked + .slider::before {
+.switch input:checked + .slider::before{
   transform: translateX(26px);
   background: var(--accent);
 }

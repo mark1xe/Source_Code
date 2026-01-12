@@ -1,3 +1,5 @@
+// control.js
+
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAbeFhSuXYh_8RGIkL8AYQFuPILRgM9e_E",
@@ -55,69 +57,69 @@ function setModeUI(m) {
 }
 
 // ===== Realtime read: sensors =====
-database.ref(PATH + "/Soid").on("value", function(snapshot) {
-  let v = snapshot.val();
-  soilStat.innerHTML = (v !== null) ? Number(v).toFixed(0) : "--";
+database.ref(PATH + "/Soid").on("value", (snapshot) => {
+  const v = snapshot.val();
+  soilStat.textContent = (v !== null) ? Number(v).toFixed(0) : "--";
 });
 
-database.ref(PATH + "/Volume").on("value", function(snapshot) {
-  let v = snapshot.val();
-  volumeStat.innerHTML = (v !== null) ? Number(v).toFixed(0) : "--";
+database.ref(PATH + "/Volume").on("value", (snapshot) => {
+  const v = snapshot.val();
+  volumeStat.textContent = (v !== null) ? Number(v).toFixed(0) : "--";
 });
 
 // ===== Realtime read: settings/mode =====
-database.ref(PATH + "/Threshold").on("value", function(snapshot) {
-  let v = snapshot.val();
+database.ref(PATH + "/Threshold").on("value", (snapshot) => {
+  const v = snapshot.val();
   if (v !== null) {
-    thresholdStat.innerHTML = Number(v).toFixed(0);
-    thresholdSlider.value = Number(v);
-    thresholdDisplay.innerHTML = `${Number(v).toFixed(0)}%`;
+    const n = Number(v);
+    thresholdStat.textContent = n.toFixed(0);
+    thresholdSlider.value = String(n);
+    thresholdDisplay.textContent = `${n.toFixed(0)}%`;
   }
 });
 
-database.ref(PATH + "/PumpSeconds").on("value", function(snapshot) {
-  let v = snapshot.val();
-  if (v !== null) pumpSecondsInput.value = Number(v);
+database.ref(PATH + "/PumpSeconds").on("value", (snapshot) => {
+  const v = snapshot.val();
+  if (v !== null) pumpSecondsInput.value = String(Number(v));
 });
 
-database.ref(PATH + "/Mode").on("value", function(snapshot) {
+database.ref(PATH + "/Mode").on("value", (snapshot) => {
   let m = snapshot.val();
   if (m === null) m = 0;
   setModeUI(Number(m));
 });
 
-database.ref(PATH + "/ManualSwitch").on("value", function(snapshot) {
-  let v = snapshot.val();
+database.ref(PATH + "/ManualSwitch").on("value", (snapshot) => {
+  const v = snapshot.val();
   manualSwitch.checked = (v === 1);
 });
 
-database.ref(PATH + "/Schedule/Date").on("value", function(snapshot) {
-  let v = snapshot.val();
+database.ref(PATH + "/Schedule/Date").on("value", (snapshot) => {
+  const v = snapshot.val();
   if (v) scheduleDate.value = v;
 });
 
-database.ref(PATH + "/Schedule/Time").on("value", function(snapshot) {
-  let v = snapshot.val();
+database.ref(PATH + "/Schedule/Time").on("value", (snapshot) => {
+  const v = snapshot.val();
   if (v) scheduleTime.value = v;
 });
 
 // ===== Write: Mode =====
-modeManual.addEventListener("change", function() {
+modeManual.addEventListener("change", () => {
   if (modeManual.checked) database.ref(PATH).update({ Mode: 0 });
 });
 
-modeAuto.addEventListener("change", function() {
+modeAuto.addEventListener("change", () => {
   if (modeAuto.checked) database.ref(PATH).update({ Mode: 1 });
 });
 
-modeSchedule.addEventListener("change", function() {
+modeSchedule.addEventListener("change", () => {
   if (modeSchedule.checked) database.ref(PATH).update({ Mode: 2 });
 });
 
 // ===== Write: Manual switch =====
-// NOTE: PumpSeconds applies to MANUAL (mode 0) + SCHEDULE (mode 2) on ESP side.
-manualSwitch.addEventListener("change", function() {
-  let state = manualSwitch.checked ? 1 : 0;
+manualSwitch.addEventListener("change", () => {
+  const state = manualSwitch.checked ? 1 : 0;
   database.ref(PATH).update({
     Mode: 0,
     ManualSwitch: state
@@ -125,26 +127,25 @@ manualSwitch.addEventListener("change", function() {
 });
 
 // ===== Write: Schedule =====
-scheduleDate.addEventListener("change", function() {
+scheduleDate.addEventListener("change", () => {
   database.ref(PATH + "/Schedule").update({ Date: scheduleDate.value });
 });
 
-scheduleTime.addEventListener("change", function() {
+scheduleTime.addEventListener("change", () => {
   database.ref(PATH + "/Schedule").update({ Time: scheduleTime.value });
 });
 
 // ===== Threshold slider display =====
-// Threshold applies to AUTO only on ESP side.
-thresholdSlider.addEventListener("input", function() {
-  thresholdDisplay.innerHTML = `${thresholdSlider.value}%`;
+thresholdSlider.addEventListener("input", () => {
+  thresholdDisplay.textContent = `${thresholdSlider.value}%`;
 });
 
-thresholdSlider.addEventListener("change", function() {
+thresholdSlider.addEventListener("change", () => {
   database.ref(PATH).update({ Threshold: Number(thresholdSlider.value) });
 });
 
 // ===== Save settings =====
-saveBtn.addEventListener("click", function() {
+saveBtn.addEventListener("click", () => {
   const th = Number(thresholdSlider.value);
   const ps = Number(pumpSecondsInput.value);
 
