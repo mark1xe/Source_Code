@@ -1,14 +1,14 @@
-# Smart Irrigation System (ESP32 + Firebase + Web App)
+# Smart Irrigation System (ESP32 + Firebase + Web App) — Latest (2 Buttons + 2×KY-040)
 
-A smart irrigation project using **ESP32**, **capacitive soil moisture sensor**, **HC-SR04 water level/volume**, **relay + pump**, **SH1106 OLED**, and **Firebase Realtime Database**.  
+A smart irrigation project using **ESP32**, **capacitive soil moisture sensor module**, **HC-SR04 module**, **relay + pump**, **SH1106 OLED module**, and **Firebase Realtime Database**.  
 Control + monitoring via **Firebase Realtime Database** (web ↔ ESP32 **two-way sync**), with **2 physical buttons** and **2 rotary encoders (KY-040)**.
 
 ---
 
 ## Features
 
-- **Soil moisture monitoring (Soid %)** using Capacitive Soil Moisture Sensor v1.2 (AO → ADC).
-- **Water remaining estimation (Volume ml)** using HC-SR04 and volume calculation.
+- **Soil moisture monitoring (Soid %)** using capacitive soil moisture sensor module (AO → ADC).
+- **Water remaining estimation (Volume ml)** using HC-SR04 module and volume calculation.
 - **OLED SH1106 display**:
   - Soil moisture (%)
   - Water volume (ml)
@@ -25,7 +25,7 @@ Control + monitoring via **Firebase Realtime Database** (web ↔ ESP32 **two-way
      - Repeats after a cooldown delay if still dry (configurable in code).
   3. **SCHEDULE** (Mode = 2)  
      - Runs at scheduled date/time for `PumpSeconds` then stops.
-- **2× KY-040 rotary encoders (physical tuning)**:
+- **2× KY-040 rotary encoder modules (physical tuning)**:
   - Encoder #1: adjust **Threshold (%)** (AUTO mode)
   - Encoder #2: adjust **PumpSeconds (s)** (AUTO + SCHEDULE)
   - Values can be pushed to Firebase so web updates too (two-way sync).
@@ -35,7 +35,7 @@ Control + monitoring via **Firebase Realtime Database** (web ↔ ESP32 **two-way
 
 ## Hardware
 
-### ESP32 Pins (baseline)
+### ESP32 pins (baseline)
 
 | Module | Signal | ESP32 GPIO |
 |------|--------|------------|
@@ -46,41 +46,74 @@ Control + monitoring via **Firebase Realtime Database** (web ↔ ESP32 **two-way
 | HC-SR04 | TRIG | GPIO5 |
 | HC-SR04 | ECHO | GPIO18 |
 | Low water warn LED | LED | GPIO17 |
-| Soil sensor v1.2 | AO | GPIO34 |
+| Soil moisture module | AO | GPIO34 |
 | OLED SH1106 I2C | SDA | GPIO21 |
 | OLED SH1106 I2C | SCL | GPIO22 |
 
-### KY-040 wiring (example)
+---
 
-> You can change GPIOs to match your code. Below is a safe/common suggestion (use **ADC-free** pins and avoid strapping pins).
+## Wiring (all modules powered at 5V)
+
+> You said all sensors/encoders are **modules** and work stable at **5V**.  
+> ESP32 GPIO are **3.3V only**, so **any 5V digital signal to ESP32 must be level-shifted / divided**.  
+> ADC input must also be ≤ 3.3V.
+
+### 1) Power
+- Use a stable **5V supply** for modules (and relay module if compatible).
+- **ESP32 can be powered by 5V** via VIN/5V pin (depending on your board).
+- **Common GND is mandatory** between ESP32 and all modules.
+
+### 2) HC-SR04 module (5V)
+- VCC → **5V**
+- GND → GND
+- TRIG → GPIO5 (3.3V output from ESP32 is OK to drive TRIG)
+- **ECHO → GPIO18 через divider/level-shifter** (important)
+  - Simple divider example: **ECHO -> 20k -> GPIO18**, GPIO18 -> **10k -> GND** (≈3.3V)
+
+### 3) Soil moisture module (5V)
+- VCC → **5V**
+- GND → GND
+- **AO → GPIO34 (ADC)**  
+  - If AO output can exceed 3.3V: add a divider (same idea as above).
+  - Many modules output ≤3.3V, but verify once with a multimeter.
+
+### 4) SH1106 OLED module (5V)
+- VCC → **5V** (module with onboard regulator)
+- GND → GND
+- SDA → GPIO21
+- SCL → GPIO22  
+  - Most OLED I2C modules can work at 3.3V logic even if powered at 5V, but if yours pulls SDA/SCL up to 5V, use:
+    - **I2C level shifter** (recommended) or
+    - Change pullups to 3.3V (if you know what you’re doing).
+
+### 5) KY-040 encoder modules (5V)
+Each KY-040 has: **VCC, GND, CLK, DT, SW**.
 
 **Encoder #1 (Threshold):**
 - VCC → **5V**
 - GND → GND
-- CLK → GPIO25
-- DT  → GPIO26
-- SW  → (optional) GPIO14
+- CLK → (your GPIO)
+- DT  → (your GPIO)
+- SW  → (optional GPIO)
 
 **Encoder #2 (PumpSeconds):**
 - VCC → **5V**
 - GND → GND
-- CLK → GPIO12
-- DT  → GPIO13
-- SW  → (optional) GPIO15
+- CLK → (your GPIO)
+- DT  → (your GPIO)
+- SW  → (optional GPIO)
 
-> If your firmware uses different pins, update this table to match.
+**Important:** KY-040 outputs are typically **5V** when powered at 5V →  
+Use **level shifting / dividers on CLK/DT/SW** before ESP32 pins.
 
----
+Divider example per signal line:
+- Signal -> **20k** -> ESP32 GPIO
+- ESP32 GPIO -> **10k** -> GND
 
-## Power notes (important)
-
-- **ESP32 is 3.3V logic**.
-- **HC-SR04 ECHO is 5V** if HC-SR04 is powered by 5V → you **must use a level shifter / voltage divider** on ECHO to protect ESP32.
-- Soil sensor v1.2 can be powered by **5V**, but its AO voltage must still be safe for ESP32 ADC.  
-  (Most versions output within 0–3.3V, but verify. If it can exceed 3.3V, use a divider.)
-- **KY-040**: recommended power **3V3** so its outputs are 3.3V-safe.
-  - If you power KY-040 at **5V**, then its CLK/DT/SW signals may go up to 5V → **level shifting/divider required**.
-  - If you already level-shifted to 3.3V, you typically **don’t need to change code**.
+### 6) Buttons (direct to ESP32)
+Buttons using `INPUT_PULLUP` should be wired:
+- GPIO32 → button → GND
+- GPIO33 → button → GND
 
 ---
 
@@ -94,8 +127,8 @@ Base path: **`/Var`**
 | `Volume` | float / int | Water remaining (ml) |
 | `Mode` | int | 0=MANUAL, 1=AUTO, 2=SCHEDULE |
 | `ManualSwitch` | int | 0/1 (MANUAL ON/OFF), synced with physical pump button |
-| `Threshold` | int | Soil threshold (%) used in AUTO (also adjustable by KY-040 #1) |
-| `PumpSeconds` | int | Pump run time (seconds) used in AUTO + SCHEDULE (also adjustable by KY-040 #2) |
+| `Threshold` | int | Soil threshold (%) used in AUTO (also from KY-040 #1) |
+| `PumpSeconds` | int | Pump run time (seconds) used in AUTO + SCHEDULE (also from KY-040 #2) |
 | `Schedule/Date` | string | `YYYY-MM-DD` |
 | `Schedule/Time` | string | `HH:MM` |
 
@@ -103,15 +136,15 @@ Base path: **`/Var`**
 
 ## Steps
 
-1. **Wire the hardware**
-   - Connect sensors, relay, OLED, 2 buttons, and 2 encoders as listed.
-   - Ensure **common GND** between ESP32, sensors, and relay module.
-   - If pump/relay uses a separate supply, connect grounds together.
+1. **Wire the hardware (5V modules)**
+   - Power all modules with **5V**.
+   - Connect **common GND**.
+   - Add **level shifting/dividers** for any module signal lines that output 5V into ESP32 GPIO.
 
 2. **Create Firebase Realtime Database**
    - Create a Firebase project
    - Enable **Realtime Database**
-   - Create (or ensure) base path: `/Var`
+   - Ensure base path: `/Var`
    - Add keys: `Mode`, `ManualSwitch`, `Threshold`, `PumpSeconds`, `Schedule/Date`, `Schedule/Time`
 
 3. **Install required libraries**
@@ -127,13 +160,13 @@ Base path: **`/Var`**
 
 5. **Upload firmware to ESP32**
    - Open Serial Monitor at **115200 baud**
-   - Confirm the device connects to WiFi, reads sensors, and updates Firebase.
+   - Confirm WiFi connects, sensor values update, and Firebase updates.
 
 6. **Open the web app**
-   - The web app reads/writes `/Var` keys to control modes, threshold, and pump seconds.
+   - The web app reads/writes `/Var` keys.
    - Verify two-way sync:
-     - Web changes → ESP32 reacts
-     - Physical buttons/encoders → Firebase updates → web reflects changes
+     - Web → ESP32 reacts
+     - Physical buttons/encoders → Firebase updates → web shows changes
 
 ---
 
@@ -206,29 +239,25 @@ If `lowWater` is true:
 ## Troubleshooting
 
 ### ESP32 resets / watchdog
-- Check power supply (pump relay noise can reset ESP32).
-- Use separate power for pump and ESP32 with common GND.
-- Add decoupling capacitors near ESP32 + relay supply.
-- Keep wiring short, separate pump power lines from signal lines.
+- Pump relay noise can reset ESP32 → use separate power for pump + ESP32, keep common GND.
+- Add capacitors near ESP32 5V input (e.g., 470µF + 0.1µF).
+- Keep pump wires away from signal wires.
 
 ### No Firebase updates
 - Confirm WiFi connected.
 - Check Firebase host/auth and database path `/Var`.
-- Ensure database rules allow read/write for your test setup.
-- Avoid calling Firebase set/get from multiple tasks with the same `FirebaseData` object.
+- Ensure database rules allow read/write for testing.
+- Keep Firebase calls in one task (avoid multiple tasks writing with same FirebaseData).
 
 ### HC-SR04 unstable readings
-- Ensure ECHO level shifting if HC-SR04 is powered at 5V.
+- Ensure **ECHO is level-shifted** into ESP32.
 - Keep sensor stable, avoid vibration.
-- Make sure container geometry constants match your real container.
 
-### Soil sensor values not stable
-- Recalibrate `rawDry` and `rawWet`.
-- If AO can exceed 3.3V, use a voltage divider.
+### OLED not detected (I2C)
+- Confirm address (0x3C / 0x3D).
+- If OLED module pulls SDA/SCL up to 5V, add an I2C level shifter.
 
-### KY-040 “jumping” / reversed direction
-- Swap CLK/DT wires if direction is inverted.
-- Add simple debounce (software) if needed.
-- Prefer powering KY-040 at 3.3V to avoid level shifting issues.
-
----
+### KY-040 wrong / noisy steps
+- If direction is reversed → swap CLK/DT.
+- If jittery → add software debounce / filtering.
+- Ensure CLK/DT/SW are **level-shifted** into ESP32 when KY-040 is powered at 5V.
