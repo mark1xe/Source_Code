@@ -97,7 +97,7 @@ volatile int  manualSwitchPending = 0;
 volatile bool modeDirty = false;
 volatile int  modePending = 0;
 
-// NEW: encoder -> Firebase flags
+// encoder -> Firebase flags
 volatile bool thresholdDirty = false;
 volatile int  thresholdPending = 0;
 
