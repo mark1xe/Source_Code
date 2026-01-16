@@ -1,5 +1,3 @@
-// control.js
-
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAbeFhSuXYh_8RGIkL8AYQFuPILRgM9e_E",
