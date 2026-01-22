@@ -227,7 +227,7 @@ body{
   color:var(--muted);
 }
 
-/* ===== Switch (theme) ===== */
+/* ===== Switch ===== */
 .switch{
   position:absolute;
   top:10px;
