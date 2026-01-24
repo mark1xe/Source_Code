@@ -51,7 +51,7 @@ The system supports **two-way synchronization** between the ESP32 firmware and a
 | Pump indicator LED | LED | **15** |
 | Button #1 (Pump toggle) | INPUT_PULLUP | **32** |
 | Button #2 (Mode cycle) | INPUT_PULLUP | **33** |
-| Low-water warning LED | LED | **12** |
+| Low-water warning LED | LED | **4** |
 | Soil moisture sensor | AO (ADC) | **34** |
 | OLED SH1106 (I2C) | SDA | **21** |
 | OLED SH1106 (I2C) | SCL | **22** |
