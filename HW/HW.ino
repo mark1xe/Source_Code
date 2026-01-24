@@ -25,11 +25,14 @@ SemaphoreHandle_t serialMutex = nullptr;
 static inline void SerialLock()   { if (serialMutex) xSemaphoreTake(serialMutex, portMAX_DELAY); }
 static inline void SerialUnlock() { if (serialMutex) xSemaphoreGive(serialMutex); }
 
+// ===== Wifi =====
+#define WIFI_LED_PIN  2
+
 // ===== Pump + Buttons =====
 #define RELAY_PIN     27
 #define BUTTON_PIN_1  32   // Pump (manual)
 #define BUTTON_PIN_2  33   // Mode
-#define LED_PIN       16
+#define LED_PIN       15
 
 volatile bool relayState = false;
 
@@ -57,7 +60,7 @@ volatile int soilPercent = 0;
 // ===== Water volume + warn LED =====
 #define TRIG_PIN      18
 #define ECHO_PIN      35
-#define WARN_LED_PIN  17
+#define WARN_LED_PIN  12
 
 #define SOUND_SPEED   0.034
 #define CUP_HEIGHT    14.0
@@ -190,6 +193,14 @@ String nowTimeHM() {
   return String(buf);
 }
 
+String scheduleTextDMY() {
+  if (fbSchDate.length() != 10 || fbSchTime.length() != 5) return "";
+  String y = fbSchDate.substring(0, 4);
+  String m = fbSchDate.substring(5, 7);
+  String d = fbSchDate.substring(8, 10);
+  return d + "/" + m + "/" + y + " " + fbSchTime;
+}
+
 // ===== Encoder decode (table) =====
 static inline int8_t encStepFrom(uint8_t prevAB, uint8_t currAB) {
   static const int8_t table[16] = {
@@ -201,11 +212,42 @@ static inline int8_t encStepFrom(uint8_t prevAB, uint8_t currAB) {
   return table[(prevAB << 2) | currAB];
 }
 
+void wifiConnect() {
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  uint32_t lastDotMs = 0;
+  uint32_t lastBlinkMs = 0;
+  bool ledState = false;
+
+  while (WiFi.status() != WL_CONNECTED) {
+    uint32_t now = millis();
+
+    if (now - lastBlinkMs >= 200) {
+      lastBlinkMs = now;
+      ledState = !ledState;
+      digitalWrite(WIFI_LED_PIN, ledState);
+    }
+
+    if (now - lastDotMs >= 800) {
+      lastDotMs = now;
+      Serial.print(".");
+    }
+
+    delay(1);
+  }
+
+  digitalWrite(WIFI_LED_PIN, HIGH);
+  Serial.println("\nWiFi connected.");
+}
+
 void setup() {
   Serial.begin(115200);
   delay(200);
 
   serialMutex = xSemaphoreCreateMutex();
+
+  pinMode(WIFI_LED_PIN, OUTPUT);
+  digitalWrite(WIFI_LED_PIN, LOW);
 
   pinMode(RELAY_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
@@ -238,14 +280,7 @@ void setup() {
   pinMode(ENC_PS_DT,  INPUT_PULLUP);
   pinMode(ENC_PS_SW,  INPUT_PULLUP);
 
-  // WiFi
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    SerialLock(); Serial.print("."); SerialUnlock();
-  }
-  SerialLock(); Serial.println("\nWiFi connected."); SerialUnlock();
-
+  wifiConnect();
   setupTimeNTP();
 
   // Firebase
@@ -408,25 +443,19 @@ void displayTask(void *pvParameters) {
 
     display.clearDisplay();
     display.setTextColor(SH110X_WHITE);
-
     display.setTextSize(1);
+
     display.setCursor(0, 0);
-    display.print("Soil:");
-    display.setTextSize(2);
-    display.setCursor(42, 0);
+    display.print("Soil: ");
     display.print(sp);
     display.print("%");
 
-    display.setTextSize(1);
-    display.setCursor(0, 24);
-    display.print("Water:");
-    display.setTextSize(2);
-    display.setCursor(54, 24);
+    display.setCursor(0, 12);
+    display.print("Water: ");
     display.print(vol);
     display.print("ml");
 
-    display.setTextSize(1);
-    display.setCursor(0, 56);
+    display.setCursor(0, 24);
     display.print("Th:");
     display.print(th);
     display.print(" M:");
@@ -435,10 +464,39 @@ void displayTask(void *pvParameters) {
     display.print(pumpTimedRunning ? remain : ps);
     display.print("s");
 
+    if (mode == 2) {
+      String s = scheduleTextDMY();
+      if (s.length()) {
+        display.setCursor(0, 36);
+        display.print("Sch: ");
+        display.print(s);
+      }
+    }
+
+    bool warnBlinkOn = ((millis() / 500) % 2) == 0;
+
+    if (lowWater && warnBlinkOn) {
+      const int iconX = 0;
+      const int iconY = 52;
+
+      display.fillTriangle(iconX + 6,  iconY + 0,
+                           iconX + 0,  iconY + 12,
+                           iconX + 12, iconY + 12,
+                           SH110X_WHITE);
+
+      display.drawLine(iconX + 6, iconY + 4, iconX + 6, iconY + 8, SH110X_BLACK);
+      display.drawPixel(iconX + 6, iconY + 10, SH110X_BLACK);
+
+      display.setCursor(16, 56);
+      display.print("WATER LOW!");
+    }
+
     display.display();
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
   }
 }
+
+
 
 // ===== Firebase =====
 void firebaseTask(void *pvParameters) {
