@@ -48,10 +48,10 @@ The system supports **two-way synchronization** between the ESP32 firmware and a
 | Function / Module | Signal | ESP32 GPIO |
 |---|---|---:|
 | Relay (Pump) | IN | **27** |
-| Pump indicator LED | LED | **16** |
+| Pump indicator LED | LED | **15** |
 | Button #1 (Pump toggle) | INPUT_PULLUP | **32** |
 | Button #2 (Mode cycle) | INPUT_PULLUP | **33** |
-| Low-water warning LED | LED | **17** |
+| Low-water warning LED | LED | **12** |
 | Soil moisture sensor | AO (ADC) | **34** |
 | OLED SH1106 (I2C) | SDA | **21** |
 | OLED SH1106 (I2C) | SCL | **22** |
@@ -61,7 +61,7 @@ The system supports **two-way synchronization** between the ESP32 firmware and a
 | Module | Signal | ESP32 GPIO |
 |---|---|---:|
 | HC-SR04 | TRIG | **18** |
-| HC-SR04 | ECHO | **35** *(input-only, recommended)* |
+| HC-SR04 | ECHO | **35** |
 
 ### Rotary Encoders (2× KY-040)
 
